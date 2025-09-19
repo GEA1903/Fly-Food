@@ -1,25 +1,30 @@
 class FoodDelivery:
-    def __init__(self):
-        self.matriz = []
-        self.ponto_origem = None
-        self.pontos_entrega = {}
+    def __init__(self, nome_arquivo='matriz.txt', valores={}):
+        self.valores = valores
+        self.nome_arquivo = nome_arquivo
 
+
+
+# Função que vai ler um arquivo de texto contendo a matriz e passa seus valores num dicionário""
     def ler_matriz(self):
-        print("• Use 'R' para marcar o ponto de origem (restaurante)")
-        print("• Use letras (A, B, C, D...) para pontos de entrega")
-        
-        
         try:
-            while True:
-              dimensao=input().strip()
-              if not dimensao:
-                  print("Dimensao invalida")
-                  continue
-              try:
-                  linhas, colunas = map(int, dimensao.split())
-                  if linhas <= 0 or colunas <= 0:
-                      print("As dimensoes devem ser positivas")
-                      continue
-                  break
-              except ValueError:
+            
+            #Abertura e leitura do arquivo
+            with open("matriz.txt", 'r') as file: 
+                linhas = file.readlines()
+        except FileNotFoundError:
+            print("Arquivo não encontrado.")
+            return None
+        
+        #Definição de um dicionário para armazenar as coordenadas relevantes da matriz
+        
+        self.valores = {}
+
+
+        #Percorre cada linha e coluna da matriz, armazenando no dicionário os caracteres como chave e sua posição como valores
+        for indice_linha, linha in enumerate(linhas):
+            for indice_coluna, char in enumerate(linha.strip()):
+                if char.isalpha() and char != '0':
+                    self.valores[char] = (indice_linha, indice_coluna)
+        return self.valores
     
