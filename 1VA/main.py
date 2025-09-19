@@ -1,30 +1,33 @@
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
-        self.valores = valores
+        self.valores = valores if valores is not None else {}
         self.nome_arquivo = nome_arquivo
 
 
 
-# Função que vai ler um arquivo de texto contendo a matriz e passa seus valores num dicionário""
+
     def ler_matriz(self):
-        try:
+       
+       """
+        Lê o arquivo de texto contendo a matriz e armazena as coordenadas relevantes em um dicionário.
+        """
+       try:
             
-            #Abertura e leitura do arquivo
-            with open("matriz.txt", 'r') as file: 
+            with open(self.nome_arquivo, 'r') as file:      
                 linhas = file.readlines()
-        except FileNotFoundError:
+       except FileNotFoundError:
             print("Arquivo não encontrado.")
             return None
         
-        #Definição de um dicionário para armazenar as coordenadas relevantes da matriz
         
-        self.valores = {}
+       self.valores = {}
 
-
-        #Percorre cada linha e coluna da matriz, armazenando no dicionário os caracteres como chave e sua posição como valores
-        for indice_linha, linha in enumerate(linhas):
+       for indice_linha, linha in enumerate(linhas):
             for indice_coluna, char in enumerate(linha.strip()):
                 if char.isalpha() and char != '0':
                     self.valores[char] = (indice_linha, indice_coluna)
-        return self.valores
+       return self.valores
     
+
+
+      
