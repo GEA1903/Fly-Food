@@ -28,6 +28,8 @@ class FoodDelivery:
                     self.valores[char] = (indice_linha, indice_coluna)
        return self.valores
     
-
-
-      
+    def calculo_distancia(self):
+        """
+        Calcula o custo de viagem tomando como base a distância de Manhattan que soma os deslocamentos horizontais e verticais entre cada ponto
+        """
+        
