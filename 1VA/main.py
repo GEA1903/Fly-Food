@@ -108,18 +108,5 @@ class FoodDelivery:
             self.colunas = 0
             return None                   
         
-    def processar_matriz_dimensoes(self, linhas):
-         # Extrair dimensões da primeira linha
-    # Processar linhas[1:] como dados
-    # Preencher self.valores, self.matriz, etc.
-        pass
-        
-        
-        
-        
-    def processar_matriz_sem_dimensoes(self,linhas):  
-        # Calcular dimensões automaticamente  
-    # Processar todas as linhas como dados
-    # Preencher self.valores, self.matriz, etc.
-        pass         
+     
         
