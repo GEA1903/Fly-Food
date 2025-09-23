@@ -44,7 +44,7 @@ class FoodDelivery:
             self.valores= {}
             self.matriz= []
             self.ponto_origem=None
-            self.pontos_entrega={}
+            self.pontos_entrega=[]
             self.linhas=0
             self.colunas=0
             
@@ -110,3 +110,43 @@ class FoodDelivery:
         
      
         
+
+
+    def distancia(self, p1, p2):
+    # Distância Manhattan em grade
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+
+    def guloso_matriz(self, matriz):
+        
+
+        # 1) Encontrar R e os clientes na matriz
+        for i in range(len(matriz)):
+            for j in range(len(matriz[0])):
+                if matriz[i][j] == "R": 
+                    self.ponto_origem = (i, j)
+                elif matriz[i][j] == "C": # identificar se é destino da rota
+                    self.pontos_entrega.append((i, j))
+
+        if not self.ponto_origem:
+            raise ValueError("Não há ponto R na matriz!")
+
+        rota = [self.ponto_origem]
+        atual = self.ponto_origem
+        nao_visitados = set(self.pontos_entrega)
+        distancia_total = 0
+
+        # 2) Sempre ir para o cliente mais próximo
+        while nao_visitados:
+            proximo = min(nao_visitados, key=lambda c: self.distancia(atual, c))
+            distancia_total += self.distancia(atual, proximo)
+            rota.append(proximo)
+            atual = proximo
+            nao_visitados.remove(proximo)
+
+        # 3) Voltar para R
+        distancia_total += self.distancia(atual, self.ponto_origem)
+        rota.append(self.ponto_origem)
+
+        return rota, distancia_total   
+   
