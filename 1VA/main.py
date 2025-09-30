@@ -59,22 +59,22 @@ class FoodDelivery:
                 self.linhas= int(primeira_linha[0])
                 self.colunas= int(primeira_linha[1])
                 
-                dados_matriz= linhas[1:]
+                dados = linhas[1:]  # <-- CORRIGIDO: Agora usa 'dados'
                 
-                if len(dados_matriz) != self.linhas:
+                if len(dados) != self.linhas:
                     raise ValueError("Numero de linhas nao corresponde ao numero de colunas")
-                
-                
+            
+            
             else:
                 #FORMATO: DADOS DIRETOS
                 dados= linhas
                 self.linhas=len(dados)
-                self.colunas=len(dados[0].replace('',''))
+                self.colunas=len(dados[0].replace(' ', ''))
             
              #processa cada linha
             for i, linha in enumerate(dados):
                 #REMOVE ESPACOS E CONVERTE EM LISTA DE CARACTERES
-                chars=linha.replace('','')
+                chars=linha.replace(' ', '') 
                 
                 if len(chars) != self.colunas:
                     raise ValueError('Erro dectado')
@@ -120,7 +120,7 @@ class FoodDelivery:
 
 
     def guloso_matriz(self, matriz):
-        
+     """    
 
         # 1) Encontrar R e os clientes na matriz
         for i in range(len(matriz)):
@@ -150,17 +150,74 @@ class FoodDelivery:
         distancia_total += self.distancia(atual, self.ponto_origem)
         rota.append(self.ponto_origem)
 
-        return rota, distancia_total   
-    
-    def melhor_rota(self):
-        if not self.ponto_origem:
-            raise ValueError
-        if not self.pontos_entrega:
-            raise ValueError
+        return rota, distancia_total """  
         
-        melhor_rota=None
-        melhor_distancia=float('inf')
+    def melhor_rota(self):
+        '''
+        Calcula a rota de menor distância usando permutações (algoritmo exaustivo, porém o mais acertivo).
+        '''
+        if 'R' not in self.valores:
+            raise ValueError("Ponto de origem 'R' não encontrado em self.valores!")
+        
+        ponto_origem_coord = self.valores['R']
+        
+        # Obtém a lista de nomes dos pontos de entrega (excluindo 'R')
+        pontos_entrega_nomes = [
+            ponto for ponto in self.valores if ponto != 'R'
+        ]
+        if not pontos_entrega_nomes:
+            return "", 0 # Nenhuma entrega, rota vazia e custo zero
 
-        for ordem in permutations(self.pontos_entrega):
-            rota=[self.ponto_origem] + list(ordem) + [self.ponto_origem]
-   
+        menor_distancia = float('inf')
+        melhor_rota_sequencia = None
+        
+        for permutacao in permutations(pontos_entrega_nomes):
+            distancia_atual = 0
+            
+            # 1. Distância de R para o primeiro ponto
+            primeiro_ponto = permutacao[0]
+            distancia_atual += self.distancia(
+                ponto_origem_coord, self.valores[primeiro_ponto]
+            )
+
+             # 2. Distância entre os pontos de entrega sequenciais
+            for i in range(len(permutacao) - 1):
+                ponto_a_nome = permutacao[i]
+                ponto_b_nome = permutacao[i+1]
+                distancia_atual += self.distancia(
+                    self.valores[ponto_a_nome], self.valores[ponto_b_nome]
+                )
+             # 3. Distância do último ponto de volta para R
+            ultimo_ponto = permutacao[-1]
+            distancia_atual += self.distancia(
+                self.valores[ultimo_ponto], ponto_origem_coord
+            )
+            # 4. Compara e atualiza
+            if distancia_atual < menor_distancia:
+                menor_distancia = distancia_atual
+                melhor_rota_sequencia = permutacao
+
+            # Formata a saída no padrão "A B C D"
+        melhor_rota_string = " ".join(melhor_rota_sequencia)
+
+        return melhor_rota_string, menor_distancia
+
+if __name__ == "__main__":
+    # Exemplo de entrada do projeto
+    matriz_exemplo = """4 5
+0 0 0 0 D
+0 A 0 0 0
+0 0 0 0 C
+R 0 B 0 0"""
+
+    solver = FoodDelivery()
+    
+    # 1. Carrega os dados da matriz
+    solver.ler_matriz_string(matriz_exemplo)
+    
+    # 2. Encontra a rota ótima
+    rota, distancia = solver.melhor_rota()
+    
+    # 3. Imprime o resultado final
+    print(f"Melhor rota encontrada: {rota}")
+    print(f"Menor distância total: {distancia} dronômetros")   
