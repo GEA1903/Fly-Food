@@ -1,10 +1,12 @@
+from itertools import permutations
+
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
         self.valores = valores if valores is not None else {}
         self.nome_arquivo = nome_arquivo
         self.matriz = []
         self.ponto_origem = None
-        self.pontos_entrega = {}
+        self.pontos_entrega = []
         self.linhas = 0
         self.colunas = 0
 
@@ -149,4 +151,16 @@ class FoodDelivery:
         rota.append(self.ponto_origem)
 
         return rota, distancia_total   
+    
+    def melhor_rota(self):
+        if not self.ponto_origem:
+            raise ValueError
+        if not self.pontos_entrega:
+            raise ValueError
+        
+        melhor_rota=None
+        melhor_distancia=float('inf')
+
+        for ordem in permutations(self.pontos_entrega):
+            rota=[self.ponto_origem] + list(ordem) + [self.ponto_origem]
    
