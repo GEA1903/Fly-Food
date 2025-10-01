@@ -119,7 +119,7 @@ class FoodDelivery:
         return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 
-    def guloso_matriz(self, matriz):
+    def guloso_matriz(self):
      """    
 
         # 1) Encontrar R e os clientes na matriz
