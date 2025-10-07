@@ -1,4 +1,5 @@
 from itertools import permutations
+from pathlib import Path
 
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
@@ -211,16 +212,18 @@ class FoodDelivery:
 
 if __name__ == "__main__":
     # Exemplo de entrada do projeto
-    matriz_exemplo = """4 5
-0 0 0 0 D
-0 A 0 0 0
-0 0 0 0 C
-R 0 B 0 0"""
+#     matriz_exemplo = """4 5
+# 0 0 0 0 D
+# 0 A 0 0 0
+# 0 0 0 0 C
+# R 0 B 0 0"""
 
-    solver = FoodDelivery()
+    # Usa o arquivo matriz.txt localizado no mesmo diretório deste script
+    solver = FoodDelivery(nome_arquivo=str(Path(__file__).resolve().parent / 'matriz.txt'))
     
     # 1. Carrega os dados da matriz
-    solver.ler_matriz_string(matriz_exemplo)
+    solver.ler_matriz()
+    print("Valores encontrados:", solver.valores) #debug
     
     # 2. Encontra a rota ótima
     rota, distancia = solver.melhor_rota()
