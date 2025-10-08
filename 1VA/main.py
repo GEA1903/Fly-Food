@@ -223,7 +223,7 @@ if __name__ == "__main__":
     
     # 1. Carrega os dados da matriz
     solver.ler_matriz()
-    print("Valores encontrados:", solver.valores) #debug
+    # print("Valores encontrados:", solver.valores) #debug
     
     # 2. Encontra a rota ótima
     rota, distancia = solver.melhor_rota()
