@@ -1,3 +1,4 @@
+import time
 from itertools import permutations
 from pathlib import Path
 
@@ -211,6 +212,7 @@ class FoodDelivery:
         return melhor_rota_string, menor_distancia
 
 if __name__ == "__main__":
+    inicio_total = time.time()
     # Exemplo de entrada do projeto
 #     matriz_exemplo = """4 5
 # 0 0 0 0 D
@@ -221,13 +223,23 @@ if __name__ == "__main__":
     # Usa o arquivo matriz.txt localizado no mesmo diretório deste script
     solver = FoodDelivery(nome_arquivo=str(Path(__file__).resolve().parent / 'matriz.txt'))
     
+    inicio_leitura = time.time()
     # 1. Carrega os dados da matriz
     solver.ler_matriz()
     # print("Valores encontrados:", solver.valores) #debug
+    fim_leitura = time.time()
     
+    inicio_rota = time.time()
     # 2. Encontra a rota ótima
     rota, distancia = solver.melhor_rota()
+    fim_rota = time.time()
+
+    fim_total = time.time()
     
     # 3. Imprime o resultado final
     print(f"Melhor rota encontrada: {rota}")
     print(f"Menor distância total: {distancia} dronômetros")   
+
+    print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
+    print(f"Tempo de cálculo da rota:   {fim_rota - inicio_rota:.2f} s")
+    print(f"Tempo total do programa:    {fim_total - inicio_total:.2f} s")
