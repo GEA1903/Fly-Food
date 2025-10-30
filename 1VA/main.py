@@ -129,37 +129,37 @@ class FoodDelivery:
 
 
     def guloso_matriz(self):
-     """    
+        if 'R' not in self.valores:
+            raise ValueError("Ponto de origem 'R' não encontrado!")
 
-        # 1) Encontrar R e os clientes na matriz
-        for i in range(len(matriz)):
-            for j in range(len(matriz[0])):
-                if matriz[i][j] == "R": 
-                    self.ponto_origem = (i, j)
-                elif matriz[i][j] == "C": # identificar se é destino da rota
-                    self.pontos_entrega.append((i, j))
-
-        if not self.ponto_origem:
-            raise ValueError("Não há ponto R na matriz!")
-
-        rota = [self.ponto_origem]
-        atual = self.ponto_origem
-        nao_visitados = set(self.pontos_entrega)
+        atual = 'R'
+        visitados = ['R']
         distancia_total = 0
 
-        # 2) Sempre ir para o cliente mais próximo
-        while nao_visitados:
-            proximo = min(nao_visitados, key=lambda c: self.distancia(atual, c))
-            distancia_total += self.distancia(atual, proximo)
-            rota.append(proximo)
+        # Enquanto houver pontos não visitados
+        while len(visitados) < len(self.valores):
+            menor_dist = float('inf')
+            proximo = None
+
+            for ponto in self.valores:
+                if ponto not in visitados:
+                    d = self.distancia(self.valores[atual], self.valores[ponto])
+                    if d < menor_dist:
+                        menor_dist = d
+                        proximo = ponto
+
+            visitados.append(proximo)
+            distancia_total += menor_dist
             atual = proximo
-            nao_visitados.remove(proximo)
 
-        # 3) Voltar para R
-        distancia_total += self.distancia(atual, self.ponto_origem)
-        rota.append(self.ponto_origem)
+        # Retorna ao ponto de origem
+        distancia_total += self.distancia(self.valores[atual], self.valores['R'])
+        visitados.append('R')
 
-        return rota, distancia_total """  
+        # 🔹 Converte a lista em string formatada
+        rota_string = " - ".join(visitados)
+
+        return rota_string, distancia_total
         
     def melhor_rota(self):
         '''
@@ -226,6 +226,7 @@ if __name__ == "__main__":
     inicio_leitura = time.time()
     # 1. Carrega os dados da matriz
     solver.ler_matriz()
+
     # print("Valores encontrados:", solver.valores) #debug
     fim_leitura = time.time()
     
@@ -235,6 +236,7 @@ if __name__ == "__main__":
     fim_rota = time.time()
 
     fim_total = time.time()
+    rota, distancia = solver.guloso_matriz()
     
     # 3. Imprime o resultado final
     print(f"Melhor rota encontrada: {rota}")
