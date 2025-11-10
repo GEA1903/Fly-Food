@@ -1,6 +1,7 @@
 import time
 from itertools import permutations
 from pathlib import Path
+import customtkinter as ctk
 
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
