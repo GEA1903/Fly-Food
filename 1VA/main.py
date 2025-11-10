@@ -1,6 +1,8 @@
 import time
 from itertools import permutations
 from pathlib import Path
+import random
+from deap import base, creator, tools, algorithms
 
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
@@ -126,7 +128,106 @@ class FoodDelivery:
     def distancia(self, p1, p2):
     # Distância Manhattan em grade
         return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+    
+    def distancia_rota(self,sequencia_pontos):
+        if not sequencia_pontos:
+            return 0
+        distancia_total = 0
+        ponto_origem = self.valores['R']
+        # distancia de R até o primeiro ponto
+        distancia_total += self.distancia(ponto_origem, self.valores[sequencia_pontos[0]])
 
+        # distancia entre pontos consecutivos
+        for i in range(len(sequencia_pontos) - 1):
+            distancia_total += self.distancia(
+                self.valores[sequencia_pontos[i]],
+                self.valores[sequencia_pontos[i+1]]
+            )
+        distancia_total += self.distancia(self.valores[sequencia_pontos[-1]], ponto_origem)
+
+        return distancia_total
+
+    def algoritimo_genetico(self,
+                            tamanho_populacao=100,
+                            geracoes=500,
+                            taxa_mutacao=0.15,
+                            taxa_crossover=0.8,
+                            verbose=False):
+        '''tamano_populacao: numero de individuos em cada geração
+        geracoes: numero de gerações para evoluir
+        taxa_mutacao: probabilidade de mutação
+        taxa_crossover: probabilidade de crossover
+        verbose: se True, imprime informações do progresso
+        '''
+        if 'R' not in self.valores:
+            raise ValueError("Ponto de origem 'R' não encontrado em self.valores!")
+        pontos_entrega_nomes = [ ponto for ponto in self.valores if ponto !='R' ]
+        if not pontos_entrega_nomes:
+            return "", 0 # Nenhuma entrega, rota vazia e custo zero
+        n_pontos = len(pontos_entrega_nomes)
+        indice_para_nome = {i:pontos_entrega_nomes[i] for i in range(n_pontos)}
+        
+        # Configuração do DEAP
+        creator.create("FitnessMin",base.Fitness,weights=(-1.0,)) # Minimizar a distância
+        creator.create("Individual",list,fitness=creator.FitnessMin)  #representa uma rota(individuos)
+        toolbox = base.Toolbox() # Caixa de ferramentas--> onde serao registrados os objetivos e elementos do ag
+
+        def avaliar_individuo(individuo):
+            rota_nomes= [indice_para_nome[i] for i in individuo]
+            return (self.distancia_rota(rota_nomes),) # Retorna uma tupla
+        
+        # Mapeia nomes dos pontos para índices
+        toolbox.register("indices", random.sample,range(n_pontos), n_pontos) # Gera uma permutação dos índices de forma aleatória--> cria a sequencia inicial dos individuos(genotipo), garantindo a permutaão
+        toolbox.register("individual",tools.initIterate,creator.Individual,toolbox.indices)#iniciacializa um individuo com o formato esperado pelo DEAP
+        toolbox.register("population",tools.initRepeat,list,toolbox.individual)#Cria uma lista de individuos, chamado toolbox.individual() repetidamente --> maneira padrao de construção de população
+
+        toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
+        toolbox.register("mate",tools.cxOrdered) #CROSSOVER DE ORDEM (OX) de duas permutacoes
+        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2) #MUTAÇAO POR EMBARALHAMENTO
+        toolbox.register("select",tools.selTournament,tournsize=3) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
+
+        # Cria a população inicial
+        populacao = toolbox.population(n=tamanho_populacao)
+
+        #ESTATISTICAS PARA ACOMPANHAR O PROGRESSO
+        stats= tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register("min", min)
+        stats.register("avg", lambda x: sum(val[0] for val in x) / len(x))
+        stats.register("max", max)
+
+        #HALL OF FAME: armazena o melhor individuo encontrado
+        hall_of_fame = tools.HallOfFame(1)
+        
+        if verbose:
+            print("Iniciando evolução genética...")
+        
+        #Algoritimo evolutivo 
+        populacao, logbook= algorithms.eaSimple(
+            populacao,
+            toolbox,
+            cxpb=taxa_crossover,
+            mutpb=taxa_mutacao,
+            ngen=geracoes,
+            stats=stats,
+            halloffame=hall_of_fame,
+            verbose=verbose
+        ) 
+
+        #MELHOR SOLUCAO ENCONTRADA--> CONVERTE INDICE PARA NOME
+        melhor_individuo= hall_of_fame[0]
+        melhor_distancia= melhor_individuo.fitness.values[0]
+        rota_nomes= [indice_para_nome[i] for i in melhor_individuo]
+        melhor_rota_string= " ".join(rota_nomes)
+
+        if verbose:
+            print(f"Melhor solução encontrada:")
+            print(f"Rota:{melhor_rota_string}") 
+            print(f"Distância total: {melhor_distancia} dronômetros")
+        return melhor_rota_string, melhor_distancia
+
+
+ 
+         
 
     def guloso_matriz(self):
         if 'R' not in self.valores:
@@ -231,12 +332,17 @@ if __name__ == "__main__":
     fim_leitura = time.time()
     
     inicio_rota = time.time()
-    # 2. Encontra a rota ótima
-    rota, distancia = solver.melhor_rota()
+    # 2. Escolhe o método: se houver mais de 9 pontos de entrega, usa AG; caso contrário, usa o guloso
+    n_pontos = len([p for p in solver.valores if p != 'R'])
+    if n_pontos > 9:
+        print(f"Usando algoritmo genético (pontos de entrega: {n_pontos})")
+        rota, distancia = solver.algoritimo_genetico()
+    else:
+        print(f"Usando algoritmo guloso (pontos de entrega: {n_pontos})")
+        rota, distancia = solver.guloso_matriz()
     fim_rota = time.time()
 
     fim_total = time.time()
-    rota, distancia = solver.guloso_matriz()
     
     # 3. Imprime o resultado final
     print(f"Melhor rota encontrada: {rota}")
