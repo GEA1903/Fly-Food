@@ -345,7 +345,7 @@ if __name__ == "__main__":
     fim_total = time.time()
     
     # 3. Imprime o resultado final
-    print(f"Melhor rota encontrada: {rota}")
+    print(f"Melhor rota encontrada: R {rota} R")
     print(f"Menor distância total: {distancia} dronômetros")   
 
     print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
