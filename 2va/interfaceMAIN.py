@@ -26,8 +26,8 @@ class Program (ctk.CTk):
             tela = TelaInicial(self)
             self.trocar_tela(tela)
         
-    def mostrar_resultado(self, matriz, rota, distancia, metodo):
-            tela = Resultado(self, matriz, rota, distancia, metodo)
+    def mostrar_resultado(self, matriz, rota, distancia, metodo, tempo):
+            tela = Resultado(self, matriz, rota, distancia, metodo, tempo)
             self.trocar_tela(tela)
 if __name__ == '__main__':
     app = Program()
@@ -38,7 +38,6 @@ if __name__ == '__main__':
 
 
     
-
 
 
 

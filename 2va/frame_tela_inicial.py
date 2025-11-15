@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from main import FoodDelivery
+import time
 
 def aplicar_placeholder(textbox, texto_placeholder, cor_placeholder="gray"):
     # Criar o label que fica por cima
@@ -28,6 +29,7 @@ class TelaInicial(ctk.CTkFrame):
     def __init__ (self, master):
         super(). __init__(master)
 
+        
         #Frame topo
         self.frame_topo = ctk.CTkFrame (self, fg_color='#F54927', height=80)
         self.frame_topo.pack(fill='x')
@@ -41,13 +43,14 @@ class TelaInicial(ctk.CTkFrame):
 
         #Frame matriz
         self.matriz_frame=ctk.CTkFrame(self.frame_rest, fg_color="#E0A66F")
-        self.matriz_frame.place(relx=0.5, rely=0.4, anchor='center')
+        self.matriz_frame.pack(pady=20)
 
         self.preencher_matriz = ctk.CTkTextbox(
             self.matriz_frame,
             width=350,
             height=200,
-            text_color='#363432',
+            fg_color="#FFFFFF",
+            text_color="black",
             font=('Arial', 12)
         )
         self.preencher_matriz.pack(pady=25, padx=10)
@@ -59,7 +62,7 @@ class TelaInicial(ctk.CTkFrame):
                               fg_color='#E37F07', text_color='#050504',
                               font=('Arial', 15),
                               command=self.matriz_calculo)  # parâmetro do widget
-        botao.pack( pady=40, side='right')  # geometry managers
+        botao.pack( pady=40,padx=10, side='right')  # geometry managers
 
         #mensagens de erro
         self.label_status = ctk.CTkLabel(self, text='')
@@ -85,14 +88,17 @@ class TelaInicial(ctk.CTkFrame):
         if n_pontos == 0:
             self.label_status.configure(text='Nenhum ponto de entrega encontrado')
             return
+        
+        inicio=time.time()
         if n_pontos > 9:
             metodo='Algoritmo Genético'
             rota, distancia=solver.algoritimo_genetico()
         else:
             metodo='Guloso'
             rota, distancia = solver.guloso_matriz()
-
+        fim=time.time()
+        tempo=fim - inicio
         #vai para a tela de resultados
-        self.master.mostrar_resultado(matriz, rota, distancia,metodo)
+        self.master.mostrar_resultado(matriz, rota, distancia,metodo, tempo)
 
         
