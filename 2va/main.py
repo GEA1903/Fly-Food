@@ -217,7 +217,7 @@ class FoodDelivery:
         melhor_individuo= hall_of_fame[0]
         melhor_distancia= melhor_individuo.fitness.values[0]
         rota_nomes= [indice_para_nome[i] for i in melhor_individuo]
-        melhor_rota_string= " ".join(rota_nomes)
+        melhor_rota_string= " - ".join(rota_nomes)
 
         if verbose:
             print(f"Melhor solução encontrada:")
@@ -256,9 +256,10 @@ class FoodDelivery:
         # Retorna ao ponto de origem
         distancia_total += self.distancia(self.valores[atual], self.valores['R'])
         visitados.append('R')
+        pontos_intermediarios=visitados[1:-1]
 
         # 🔹 Converte a lista em string formatada
-        rota_string = " - ".join(visitados)
+        rota_string = " - ".join(pontos_intermediarios)
 
         return rota_string, distancia_total
         
@@ -345,7 +346,7 @@ if __name__ == "__main__":
     fim_total = time.time()
     
     # 3. Imprime o resultado final
-    print(f"Melhor rota encontrada: R {rota} R")
+    print(f"Melhor rota encontrada: R - {rota} - R")
     print(f"Menor distância total: {distancia} dronômetros")   
 
     print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
