@@ -86,7 +86,7 @@ class TelaInicial(ctk.CTkFrame):
         # determina se usa ag ou busca exaustiva
         n_pontos = len([p for p in solver.valores if p != 'R'])
         if n_pontos == 0:
-            self.label_status.configure(text='Nenhum ponto de entrega encontrado')
+            self.label_status.configure(text='Nenhum ponto de entrega encontrado', text_color='red')
             return
         
         inicio=time.time()
