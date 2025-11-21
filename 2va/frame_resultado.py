@@ -11,6 +11,7 @@ class Resultado(ctk.CTkFrame):
 
         ctk.CTkLabel(self, text=f'Método usado: {metodo}', font=('Arial', 15)).pack(pady=15)
         ctk.CTkLabel(self, text=f'Distância total: {distancia} dronômetros', font=('Arial', 15)).pack(pady=15)
+        ctk.CTkLabel(self, text=f'Melhor rota: {rota}', font=('Arial', 15)).pack(pady=15)
         ctk.CTkLabel(self, text=f'Tempo de execução: {tempo:.2f} segundos', font=('Arial', 15)).pack(pady=15)
 
         #Exibição da matriz calculada
