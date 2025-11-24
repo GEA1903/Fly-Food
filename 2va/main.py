@@ -3,6 +3,7 @@ from itertools import permutations
 from pathlib import Path
 import random
 from deap import base, creator, tools, algorithms
+import os
 
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
@@ -124,7 +125,80 @@ class FoodDelivery:
      
         
 
+    def ler_tsp_explicit(self, nome_arquivo):
+        """
+        Lê um arquivo .tsp (EDGE_WEIGHT_TYPE: EXPLICIT, EDGE_WEIGHT_FORMAT: UPPER_ROW)
+        e armazena:
+        - self.matriz: matriz NxN de distâncias
+        - self.valores: {'R': 0, 'C1': 1, 'C2': 2, ..., 'C57': 57}
+        O ponto inicial 'R' é a cidade de índice 0.
+        """
+        pasta_script = os.path.dirname(os.path.abspath(__file__))
+        caminho_completo = os.path.join(pasta_script, nome_arquivo)
 
+        if not os.path.exists(caminho_completo):
+            raise FileNotFoundError(f"Arquivo não encontrado: {caminho_completo}")
+
+        def to_number(s):
+            return int(s) if s.isdigit() else float(s)
+
+        dimension = None
+        edge_format = None
+        in_section = False
+        tokens = []
+
+        with open(caminho_completo, 'r') as f:
+            for raw in f:
+                line = raw.strip()
+                if not line:
+                    continue
+                if line.upper() == 'EOF':
+                    break
+                if in_section:
+                    tokens.extend(line.split())
+                    continue
+
+                up = line.upper()
+                if up.startswith('DIMENSION'):
+                    dimension = int(line.split()[-1])
+                elif up.startswith('EDGE_WEIGHT_FORMAT'):
+                    edge_format = line.split()[-1].upper()
+                elif up.startswith('EDGE_WEIGHT_SECTION'):
+                    in_section = True
+
+        if dimension is None or edge_format is None:
+            raise ValueError("Cabeçalho do arquivo .tsp está incompleto.")
+        if not tokens:
+            raise ValueError("Nenhum dado numérico encontrado na EDGE_WEIGHT_SECTION.")
+
+        nums = [to_number(t) for t in tokens]
+        n = dimension
+        matriz = [[0]*n for _ in range(n)]
+
+        if edge_format == 'UPPER_ROW':
+            idx = 0
+            for i in range(n):
+                for j in range(i+1, n):
+                    val = nums[idx]
+                    matriz[i][j] = val
+                    matriz[j][i] = val
+                    idx += 1
+        else:
+            raise NotImplementedError(f"Formato '{edge_format}' ainda não implementado.")
+
+        # ✅ Armazena no estado interno da classe
+        self.matriz = matriz
+        self.valores = {'R': 0}
+        for i in range(1, n):
+            self.valores[f'C{i}'] = i
+
+        print(f"Arquivo '{nome_arquivo}' lido com sucesso.")
+        print(f"Dimensão: {n}")
+        print(f"Ponto inicial: R (índice 0)")
+        print(f"Primeira linha da matriz: {matriz[0][:10]}")
+
+        return matriz
+    
     def distancia(self, p1, p2):
     # Distância Manhattan em grade
         return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
@@ -148,11 +222,11 @@ class FoodDelivery:
         return distancia_total
 
     def algoritimo_genetico(self,
-                            tamanho_populacao=100,
-                            geracoes=500,
-                            taxa_mutacao=0.15,
-                            taxa_crossover=0.8,
-                            verbose=False):
+                            tamanho_populacao=700,
+                            geracoes=3000,
+                            taxa_mutacao=0.20,
+                            taxa_crossover=0.95,
+                            verbose=True):
         '''tamano_populacao: numero de individuos em cada geração
         geracoes: numero de gerações para evoluir
         taxa_mutacao: probabilidade de mutação
@@ -174,7 +248,7 @@ class FoodDelivery:
 
         def avaliar_individuo(individuo):
             rota_nomes= [indice_para_nome[i] for i in individuo]
-            return (self.distancia_rota(rota_nomes),) # Retorna uma tupla
+            return (self.distancia_rota_tsp(rota_nomes),) # Retorna uma tupla
         
         # Mapeia nomes dos pontos para índices
         toolbox.register("indices", random.sample,range(n_pontos), n_pontos) # Gera uma permutação dos índices de forma aleatória--> cria a sequencia inicial dos individuos(genotipo), garantindo a permutaão
@@ -183,8 +257,8 @@ class FoodDelivery:
 
         toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
         toolbox.register("mate",tools.cxOrdered) #CROSSOVER DE ORDEM (OX) de duas permutacoes
-        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2) #MUTAÇAO POR EMBARALHAMENTO
-        toolbox.register("select",tools.selTournament,tournsize=3) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
+        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.02) #MUTAÇAO POR EMBARALHAMENTO
+        toolbox.register("select",tools.selTournament,tournsize=5) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
 
         # Cria a população inicial
         populacao = toolbox.population(n=tamanho_populacao)
@@ -196,7 +270,7 @@ class FoodDelivery:
         stats.register("max", max)
 
         #HALL OF FAME: armazena o melhor individuo encontrado
-        hall_of_fame = tools.HallOfFame(1)
+        hall_of_fame = tools.HallOfFame(5)
         
         if verbose:
             print("Iniciando evolução genética...")
@@ -217,7 +291,7 @@ class FoodDelivery:
         melhor_individuo= hall_of_fame[0]
         melhor_distancia= melhor_individuo.fitness.values[0]
         rota_nomes= [indice_para_nome[i] for i in melhor_individuo]
-        melhor_rota_string= " - ".join(rota_nomes)
+        melhor_rota_string= " ".join(rota_nomes)
 
         if verbose:
             print(f"Melhor solução encontrada:")
@@ -225,7 +299,38 @@ class FoodDelivery:
             print(f"Distância total: {melhor_distancia} dronômetros")
         return melhor_rota_string, melhor_distancia
 
+    def distancia_rota_tsp(self, sequencia_pontos):
+        # CHAMAR ESSE MÉTODO DENTRO DO ALGORITMO GENÉTICO AO INVÉS DE CHAMAR O DISTANCIA_ROTA
+        #
+        """
+        Calcula a distância total de uma rota (lista de nomes como ['C3','C10',...]).
+        - Se self.matriz existir → usa a matriz de distâncias (TSP)
+        - Caso contrário → usa distância Manhattan (modo grid)
+        """
+        if not sequencia_pontos:
+            return 0
 
+        if self.matriz:  # usa matriz do TSP
+            total = 0
+            origem_idx = self.valores['R']
+            total += self.matriz[origem_idx][self.valores[sequencia_pontos[0]]]
+
+            for i in range(len(sequencia_pontos) - 1):
+                a = self.valores[sequencia_pontos[i]]
+                b = self.valores[sequencia_pontos[i + 1]]
+                total += self.matriz[a][b]
+
+            total += self.matriz[self.valores[sequencia_pontos[-1]]][origem_idx]
+            return total
+        else:
+            # fallback para modo grade (Manhattan)
+            total = 0
+            origem = self.valores['R']
+            total += self.distancia(origem, self.valores[sequencia_pontos[0]])
+            for i in range(len(sequencia_pontos) - 1):
+                total += self.distancia(self.valores[sequencia_pontos[i]], self.valores[sequencia_pontos[i + 1]])
+            total += self.distancia(self.valores[sequencia_pontos[-1]], origem)
+            return total
  
          
 
@@ -256,10 +361,9 @@ class FoodDelivery:
         # Retorna ao ponto de origem
         distancia_total += self.distancia(self.valores[atual], self.valores['R'])
         visitados.append('R')
-        pontos_intermediarios=visitados[1:-1]
 
         # 🔹 Converte a lista em string formatada
-        rota_string = " - ".join(pontos_intermediarios)
+        rota_string = " - ".join(visitados)
 
         return rota_string, distancia_total
         
@@ -326,8 +430,12 @@ if __name__ == "__main__":
     solver = FoodDelivery(nome_arquivo=str(Path(__file__).resolve().parent / 'matriz.txt'))
     
     inicio_leitura = time.time()
-    # 1. Carrega os dados da matriz
-    solver.ler_matriz()
+    # 1. Carrega os dados da matriz txt
+    #solver.ler_matriz()
+
+    # == REALIZANDO LEITURA DO BRAZIL58 == :
+    solver.ler_tsp_explicit('arquivos/brazil58.tsp')
+    
 
     # print("Valores encontrados:", solver.valores) #debug
     fim_leitura = time.time()
@@ -335,18 +443,22 @@ if __name__ == "__main__":
     inicio_rota = time.time()
     # 2. Escolhe o método: se houver mais de 9 pontos de entrega, usa AG; caso contrário, usa o guloso
     n_pontos = len([p for p in solver.valores if p != 'R'])
-    if n_pontos > 9:
-        print(f"Usando algoritmo genético (pontos de entrega: {n_pontos})")
-        rota, distancia = solver.algoritimo_genetico()
-    else:
-        print(f"Usando algoritmo guloso (pontos de entrega: {n_pontos})")
-        rota, distancia = solver.guloso_matriz()
+    #if n_pontos > 9:
+    print(f"Usando algoritmo genético (pontos de entrega: {n_pontos})")
+    #rota, distancia = solver.algoritimo_genetico()
+    #else:
+        #print(f"Usando algoritmo guloso (pontos de entrega: {n_pontos})")
+        #rota, distancia = solver.guloso_matriz()
+
+    rota, distancia = solver.algoritimo_genetico()
     fim_rota = time.time()
 
     fim_total = time.time()
     
+
+
     # 3. Imprime o resultado final
-    print(f"Melhor rota encontrada: R - {rota} - R")
+    print(f"Melhor rota encontrada:  {rota} ")
     print(f"Menor distância total: {distancia} dronômetros")   
 
     print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
