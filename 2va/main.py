@@ -3,6 +3,7 @@ from itertools import permutations
 from pathlib import Path
 import random
 from deap import base, creator, tools, algorithms
+import os
 
 class FoodDelivery:
     def __init__(self, nome_arquivo='matriz.txt', valores={}):
@@ -121,10 +122,7 @@ class FoodDelivery:
             self.colunas = 0
             return None
         
-     
-        
-
-
+    
     def distancia(self, p1, p2):
     # Distância Manhattan em grade
         return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
@@ -148,11 +146,11 @@ class FoodDelivery:
         return distancia_total
 
     def algoritimo_genetico(self,
-                            tamanho_populacao=100,
-                            geracoes=500,
-                            taxa_mutacao=0.15,
-                            taxa_crossover=0.8,
-                            verbose=False):
+                            tamanho_populacao=1000,
+                            geracoes=3000,
+                            taxa_mutacao=0.20,
+                            taxa_crossover=0.95,
+                            verbose=True):
         '''tamano_populacao: numero de individuos em cada geração
         geracoes: numero de gerações para evoluir
         taxa_mutacao: probabilidade de mutação
@@ -174,7 +172,7 @@ class FoodDelivery:
 
         def avaliar_individuo(individuo):
             rota_nomes= [indice_para_nome[i] for i in individuo]
-            return (self.distancia_rota(rota_nomes),) # Retorna uma tupla
+            return (self.distancia_rota_tsp(rota_nomes),) # Retorna uma tupla
         
         # Mapeia nomes dos pontos para índices
         toolbox.register("indices", random.sample,range(n_pontos), n_pontos) # Gera uma permutação dos índices de forma aleatória--> cria a sequencia inicial dos individuos(genotipo), garantindo a permutaão
@@ -183,8 +181,8 @@ class FoodDelivery:
 
         toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
         toolbox.register("mate",tools.cxOrdered) #CROSSOVER DE ORDEM (OX) de duas permutacoes
-        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2) #MUTAÇAO POR EMBARALHAMENTO
-        toolbox.register("select",tools.selTournament,tournsize=3) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
+        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.02) #MUTAÇAO POR EMBARALHAMENTO
+        toolbox.register("select",tools.selTournament,tournsize=5) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
 
         # Cria a população inicial
         populacao = toolbox.population(n=tamanho_populacao)
@@ -196,7 +194,7 @@ class FoodDelivery:
         stats.register("max", max)
 
         #HALL OF FAME: armazena o melhor individuo encontrado
-        hall_of_fame = tools.HallOfFame(1)
+        hall_of_fame = tools.HallOfFame(5)
         
         if verbose:
             print("Iniciando evolução genética...")
@@ -217,7 +215,7 @@ class FoodDelivery:
         melhor_individuo= hall_of_fame[0]
         melhor_distancia= melhor_individuo.fitness.values[0]
         rota_nomes= [indice_para_nome[i] for i in melhor_individuo]
-        melhor_rota_string= " - ".join(rota_nomes)
+        melhor_rota_string= " ".join(rota_nomes)
 
         if verbose:
             print(f"Melhor solução encontrada:")
@@ -225,9 +223,7 @@ class FoodDelivery:
             print(f"Distância total: {melhor_distancia} dronômetros")
         return melhor_rota_string, melhor_distancia
 
-
- 
-         
+          
 
     def guloso_matriz(self):
         if 'R' not in self.valores:
@@ -256,10 +252,9 @@ class FoodDelivery:
         # Retorna ao ponto de origem
         distancia_total += self.distancia(self.valores[atual], self.valores['R'])
         visitados.append('R')
-        pontos_intermediarios=visitados[1:-1]
 
         # 🔹 Converte a lista em string formatada
-        rota_string = " - ".join(pontos_intermediarios)
+        rota_string = " - ".join(visitados)
 
         return rota_string, distancia_total
         
@@ -326,27 +321,32 @@ if __name__ == "__main__":
     solver = FoodDelivery(nome_arquivo=str(Path(__file__).resolve().parent / 'matriz.txt'))
     
     inicio_leitura = time.time()
-    # 1. Carrega os dados da matriz
+    # == 1. Carrega os dados da matriz txt ==
+
     solver.ler_matriz()
 
-    # print("Valores encontrados:", solver.valores) #debug
+    print("Valores encontrados:", solver.valores) #debug
     fim_leitura = time.time()
     
     inicio_rota = time.time()
-    # 2. Escolhe o método: se houver mais de 9 pontos de entrega, usa AG; caso contrário, usa o guloso
+    # == 2. Escolhe o método: se houver mais de 9 pontos de entrega, usa AG; caso contrário, usa o força bruta ==
+
     n_pontos = len([p for p in solver.valores if p != 'R'])
     if n_pontos > 9:
         print(f"Usando algoritmo genético (pontos de entrega: {n_pontos})")
         rota, distancia = solver.algoritimo_genetico()
     else:
         print(f"Usando algoritmo guloso (pontos de entrega: {n_pontos})")
-        rota, distancia = solver.guloso_matriz()
+        rota, distancia = solver.melhor_rota()
+
     fim_rota = time.time()
 
     fim_total = time.time()
     
+
+
     # 3. Imprime o resultado final
-    print(f"Melhor rota encontrada: R - {rota} - R")
+    print(f"Melhor rota encontrada:  {rota} ")
     print(f"Menor distância total: {distancia} dronômetros")   
 
     print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")

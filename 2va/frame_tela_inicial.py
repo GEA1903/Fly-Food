@@ -94,7 +94,7 @@ class TelaInicial(ctk.CTkFrame):
             metodo='Algoritmo Genético'
             rota, distancia=solver.algoritimo_genetico()
         else:
-            metodo='Força bruta'
+            metodo='Força Bruta'
             rota, distancia = solver.melhor_rota()
         fim=time.time()
         tempo=fim - inicio
