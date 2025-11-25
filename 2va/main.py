@@ -339,8 +339,8 @@ if __name__ == "__main__":
         print(f"Usando algoritmo genético (pontos de entrega: {n_pontos})")
         rota, distancia = solver.algoritimo_genetico()
     else:
-        print(f"Usando algoritmo guloso (pontos de entrega: {n_pontos})")
-        rota, distancia = solver.guloso_matriz()
+        print(f"Usando algoritmo de força bruta (pontos de entrega: {n_pontos})")
+        rota, distancia = solver.melhor_rota()
     fim_rota = time.time()
 
     fim_total = time.time()
