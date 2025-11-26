@@ -173,9 +173,11 @@ class Brazil58:
             print("Iniciando evolução genética...")
         
         #Algoritimo evolutivo 
-        populacao, logbook= algorithms.eaSimple(
+        populacao, logbook= algorithms.eaMuPlusLambda(  #ALTERAÇÃO AQUI para colocar o eaMuPlusLambda no lugar do eaSimple
             populacao,
             toolbox,
+            mu=tamanho_populacao, #pais mantidos
+            lambda_=tamanho_populacao, #filhos gerados
             cxpb=taxa_crossover,
             mutpb=taxa_mutacao,
             ngen=geracoes,

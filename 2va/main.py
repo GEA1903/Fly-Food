@@ -158,7 +158,7 @@ class FoodDelivery:
         taxa_mutacao: probabilidade de mutação
         taxa_crossover: probabilidade de crossover
         verbose: se True, imprime informações do progresso
-        '''
+        ''' 
         if 'R' not in self.valores:
             raise ValueError("Ponto de origem 'R' não encontrado em self.valores!")
         pontos_entrega_nomes = [ ponto for ponto in self.valores if ponto !='R' ]
@@ -202,9 +202,11 @@ class FoodDelivery:
             print("Iniciando evolução genética...")
         
         #Algoritimo evolutivo 
-        populacao, logbook= algorithms.eaSimple(
+        populacao, logbook= algorithms.eaMuPlusLambda(
             populacao,
             toolbox,
+            mu=tamanho_populacao,
+            lambda_=tamanho_populacao,
             cxpb=taxa_crossover,
             mutpb=taxa_mutacao,
             ngen=geracoes,
