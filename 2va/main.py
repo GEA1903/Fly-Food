@@ -153,7 +153,7 @@ class FoodDelivery:
                             taxa_mutacao=0.15,
                             taxa_crossover=0.8,
                             verbose=False):
-        '''tamano_populacao: numero de individuos em cada geração
+        '''tamano_populacao: numero de rotas em cada geração
         geracoes: numero de gerações para evoluir
         taxa_mutacao: probabilidade de mutação
         taxa_crossover: probabilidade de crossover
