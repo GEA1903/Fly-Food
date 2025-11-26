@@ -311,7 +311,7 @@ class FoodDelivery:
                 melhor_rota_sequencia = permutacao
 
             # Formata a saída no padrão "A B C D"
-        melhor_rota_string = " ".join(melhor_rota_sequencia)
+        melhor_rota_string = " - ".join(melhor_rota_sequencia)
 
         return melhor_rota_string, menor_distancia
 
