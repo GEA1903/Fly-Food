@@ -119,10 +119,10 @@ class Brazil58:
         
 
     def algoritmo_genetico(self,
-                            tamanho_populacao=1000,
-                            geracoes=3000,
-                            taxa_mutacao=0.20,
-                            taxa_crossover=0.95,
+                            tamanho_populacao=300,
+                            geracoes=10000,
+                            taxa_mutacao=0.30,
+                            taxa_crossover=0.65,
                             verbose=True):
         '''tamano_populacao: numero de individuos em cada geração
         geracoes: numero de gerações para evoluir
@@ -147,15 +147,24 @@ class Brazil58:
             rota_nomes= [indice_para_nome[i] for i in individuo]
             return (self.distancia_rota_tsp(rota_nomes),) # Retorna uma tupla
         
+        def mutacao_2opt(individuo):
+            """Mutação 2-opt: inverte um segmento da rota para melhorar localmente"""
+            size = len(individuo)
+            if size < 2:
+                return individuo,
+            i, j = sorted(random.sample(range(size), 2))
+            individuo[i:j+1] = reversed(individuo[i:j+1])
+            return individuo,
+        
         # Mapeia nomes dos pontos para índices
         toolbox.register("indices", random.sample,range(n_pontos), n_pontos) # Gera uma permutação dos índices de forma aleatória--> cria a sequencia inicial dos individuos(genotipo), garantindo a permutaão
         toolbox.register("individual",tools.initIterate,creator.Individual,toolbox.indices)#iniciacializa um individuo com o formato esperado pelo DEAP
         toolbox.register("population",tools.initRepeat,list,toolbox.individual)#Cria uma lista de individuos, chamado toolbox.individual() repetidamente --> maneira padrao de construção de população
 
         toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
-        toolbox.register("mate",tools.cxOrdered) #CROSSOVER DE ORDEM (OX) de duas permutacoes
-        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.02) #MUTAÇAO POR EMBARALHAMENTO
-        toolbox.register("select",tools.selTournament,tournsize=5) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
+        toolbox.register("mate",tools.cxPartialyMatched) #CROSSOVER PMX - melhor para TSP
+        toolbox.register("mutate", mutacao_2opt) #MUTAÇAO 2-opt - muito eficaz para TSP
+        toolbox.register("select",tools.selTournament,tournsize=5) #Torneio mais seletivo
 
         # Cria a população inicial
         populacao = toolbox.population(n=tamanho_populacao)
@@ -173,9 +182,11 @@ class Brazil58:
             print("Iniciando evolução genética...")
         
         #Algoritimo evolutivo 
-        populacao, logbook= algorithms.eaSimple(
+        populacao, logbook= algorithms.eaMuPlusLambda(  
             populacao,
             toolbox,
+            mu=tamanho_populacao, 
+            lambda_=tamanho_populacao, 
             cxpb=taxa_crossover,
             mutpb=taxa_mutacao,
             ngen=geracoes,
@@ -207,7 +218,7 @@ inicio_leitura = time.time()
 
 # == LEITURA DO ARQUIVO .TSP ==
 
-solver.ler_tsp_explicit('arquivos/brazil58.tsp')
+solver.ler_tsp_explicit('brazil58.tsp')
 
 fim_leitura = time.time()
     
@@ -229,3 +240,4 @@ print(f"Menor distância total: {menor_distancia} dronômetros")
 print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
 print(f"Tempo de cálculo da rota:   {fim_rota - inicio_rota:.2f} s")
 print(f"Tempo total do programa:    {fim_total - inicio_total:.2f} s")
+
