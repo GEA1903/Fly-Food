@@ -146,7 +146,7 @@ class FoodDelivery:
         distancia_total += self.distancia(self.valores[sequencia_pontos[-1]], ponto_origem)
 
         return distancia_total
-
+#todos os parametros abaixo foram modificados
     def algoritimo_genetico(self,
                             tamanho_populacao=100,
                             geracoes=500,
@@ -201,7 +201,7 @@ class FoodDelivery:
         if verbose:
             print("Iniciando evolução genética...")
         
-        #Algoritimo evolutivo 
+        #Algoritimo evolutivo --> mudado para eaMuPlusLambda
         populacao, logbook= algorithms.eaMuPlusLambda(
             populacao,
             toolbox,

@@ -117,7 +117,7 @@ class Brazil58:
             total += self.distancia(self.valores[sequencia_pontos[-1]], origem)
             return total
         
-
+#paramentros foram ajustados para melhor desempenho no Brazil58
     def algoritmo_genetico(self,
                             tamanho_populacao=300,
                             geracoes=10000,
@@ -146,7 +146,7 @@ class Brazil58:
         def avaliar_individuo(individuo):
             rota_nomes= [indice_para_nome[i] for i in individuo]
             return (self.distancia_rota_tsp(rota_nomes),) # Retorna uma tupla
-        
+        #FUNCAO DE MUTAÇAO 2-OPT USADO EM TSP PARA MELHOR DESEMPENHO
         def mutacao_2opt(individuo):
             """Mutação 2-opt: inverte um segmento da rota para melhorar localmente"""
             size = len(individuo)
@@ -162,7 +162,8 @@ class Brazil58:
         toolbox.register("population",tools.initRepeat,list,toolbox.individual)#Cria uma lista de individuos, chamado toolbox.individual() repetidamente --> maneira padrao de construção de população
 
         toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
-        toolbox.register("mate",tools.cxPartialyMatched) #CROSSOVER PMX - melhor para TSP
+        #TUDO MODIFICADO A PARTIR DAQUI
+        toolbox.register("mate",tools.cxPartialyMatched) #CROSSOVER PMX - melhor para TSP 
         toolbox.register("mutate", mutacao_2opt) #MUTAÇAO 2-opt - muito eficaz para TSP
         toolbox.register("select",tools.selTournament,tournsize=5) #Torneio mais seletivo
 
@@ -181,7 +182,7 @@ class Brazil58:
         if verbose:
             print("Iniciando evolução genética...")
         
-        #Algoritimo evolutivo 
+        #Algoritimo evolutivo --> mudado para eaMuPlusLambda
         populacao, logbook= algorithms.eaMuPlusLambda(  
             populacao,
             toolbox,
