@@ -184,6 +184,7 @@ class FoodDelivery:
         toolbox.register("evaluate",avaliar_individuo)#Recebe um individuo e retorna a tupla com os valores de fitness--> funcao converte indice em nome e calcula a distancia total da rota com self.distancia_rota
         toolbox.register("mate",tools.cxOrdered) #CROSSOVER DE ORDEM (OX) de duas permutacoes
         toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.2) #MUTAÇAO POR EMBARALHAMENTO
+        #DIMINUIÇÃO DO TAMANHO DO TORNEIO PARA MENOR PRESSÃO SELETIVA, DE 5 PARA 3
         toolbox.register("select",tools.selTournament,tournsize=3) #Seleção por torneio: tournsize-->controla a pressao seletiva, quanto maior, melhores individuos selecionados
 
         # Cria a população inicial
