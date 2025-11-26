@@ -240,3 +240,4 @@ print(f"Menor distância total: {menor_distancia} dronômetros")
 print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
 print(f"Tempo de cálculo da rota:   {fim_rota - inicio_rota:.2f} s")
 print(f"Tempo total do programa:    {fim_total - inicio_total:.2f} s")
+
