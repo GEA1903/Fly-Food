@@ -4,7 +4,7 @@ import random
 import time
 
 class Brazil58:
-    def __init__(self, nome_arquivo='matriz.txt', valores={}):
+    def __init__(self, nome_arquivo='brazil58.tsp', valores={}):
         self.valores = valores if valores is not None else {}
         self.nome_arquivo = nome_arquivo
         self.matriz = []
@@ -209,35 +209,24 @@ class Brazil58:
     
 
 
+if __name__ == "__main__":
 
-solver = Brazil58()
+    solver = Brazil58()
 
-inicio_total = time.time()
+    inicio_total = time.time()
+    inicio_leitura = time.time()
 
-inicio_leitura = time.time()
+    solver.ler_tsp_explicit('brazil58.tsp')
+    fim_leitura = time.time()
 
-# == LEITURA DO ARQUIVO .TSP ==
+    inicio_rota = time.time()
+    melhor_rota, menor_distancia = solver.algoritmo_genetico()
+    fim_rota = time.time()
 
-solver.ler_tsp_explicit('brazil58.tsp')
+    fim_total = time.time()
 
-fim_leitura = time.time()
-    
-inicio_rota = time.time()
-
-# == EXECUÇÃO DO ALGORITMO GENÉTICO ==
-
-melhor_rota, menor_distancia = solver.algoritmo_genetico()
-
-fim_rota = time.time()
-
-fim_total = time.time()
-
-
-# 3. Imprime o resultado final
-print(f"Melhor rota encontrada:  {melhor_rota} ")
-print(f"Menor distância total: {menor_distancia} dronômetros")   
-
-print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
-print(f"Tempo de cálculo da rota:   {fim_rota - inicio_rota:.2f} s")
-print(f"Tempo total do programa:    {fim_total - inicio_total:.2f} s")
-
+    print(f"Melhor rota encontrada: {melhor_rota}")
+    print(f"Menor distância total: {menor_distancia} dronômetros")
+    print(f"Tempo de leitura da matriz: {fim_leitura - inicio_leitura:.2f} s")
+    print(f"Tempo de cálculo da rota:   {fim_rota - inicio_rota:.2f} s")
+    print(f"Tempo total do programa:    {fim_total - inicio_total:.2f} s")

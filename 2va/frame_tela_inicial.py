@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from main import FoodDelivery
+from brazil58 import Brazil58
 import time
 
 def aplicar_placeholder(textbox, texto_placeholder, cor_placeholder="gray"):
@@ -43,7 +44,7 @@ class TelaInicial(ctk.CTkFrame):
 
         #Frame matriz
         self.matriz_frame=ctk.CTkFrame(self.frame_rest, fg_color="#E0A66F")
-        self.matriz_frame.pack(pady=20)
+        self.matriz_frame.pack(pady=20, side='left', padx=40)
 
         self.preencher_matriz = ctk.CTkTextbox(
             self.matriz_frame,
@@ -67,6 +68,35 @@ class TelaInicial(ctk.CTkFrame):
         #mensagens de erro
         self.label_status = ctk.CTkLabel(self, text='')
         self.label_status.pack(pady=5)
+
+        ## frame tsp
+
+        self.frame_tsp = ctk.CTkFrame(self.frame_rest, fg_color="#E65F10", width=300, height=200)
+        self.frame_tsp.pack(side="right", pady=20, padx =40)
+
+        titulo_tsp = ctk.CTkLabel(
+            self.frame_tsp,
+            text="Insira um arquivo .tsp",
+            font=("Arial", 15, "bold")
+        )
+        titulo_tsp.pack(pady=(20, 30))
+
+        self.botao_tsp = ctk.CTkButton(
+            self.frame_tsp,
+            text="Selecionar arquivo",
+            fg_color="#E8E5DE",
+            text_color="black",
+            height=40,
+            command=self.carregar_arquivo_tsp
+        )
+        self.botao_tsp.pack(pady=20, padx=30, fill='x')
+
+        self.label_tsp_status = ctk.CTkLabel(
+            self.frame_tsp, 
+            text="", 
+            text_color="red"
+        )
+        self.label_tsp_status.pack(pady=5)
 
     def matriz_calculo(self):
         #leitura da matriz
@@ -101,4 +131,49 @@ class TelaInicial(ctk.CTkFrame):
         #vai para a tela de resultados
         self.master.mostrar_resultado(matriz, rota, distancia,metodo, tempo)
 
+    def carregar_arquivo_tsp(self):
+        from tkinter.filedialog import askopenfilename
         
+        caminho = askopenfilename(
+            title="Selecione um arquivo TSP",
+            filetypes=[("Arquivos TSPLIB", "*.tsp")]
+        )
+
+        if not caminho:
+            return
+
+        try:
+            solver = Brazil58()
+            solver.ler_tsp_explicit(caminho )   
+            self.label_tsp_status.configure(
+                text="Arquivo carregado com sucesso!",
+                text_color="green"
+            )
+
+            # Aqui você decide o que fazer após carregar o arquivo
+            # Exemplo: usar a mesma lógica de matriz_calculo()
+            n_pontos = len([p for p in solver.valores if p != 'R'])
+            if n_pontos == 0:
+                self.label_tsp_status.configure(text="Nenhum ponto válido no arquivo.", text_color="red")
+                return
+
+            import time
+            inicio = time.time()
+            if n_pontos > 9:
+                metodo = "Algoritmo Genético"
+                rota, distancia = solver.algoritimo_genetico()
+            else:
+                metodo = "Força Bruta"
+                rota, distancia = solver.melhor_rota()
+            fim = time.time()
+            tempo = fim - inicio
+
+            # Vai para a tela de resultados
+            self.master.mostrar_resultado(str(solver.matriz), rota, distancia, metodo, tempo)
+
+        except Exception as e:
+            self.label_tsp_status.configure(
+                text=f"Erro ao ler .tsp: {e}",
+                text_color="red"
+            )
+            
