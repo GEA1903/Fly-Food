@@ -2,6 +2,7 @@ import customtkinter as ctk
 from main import FoodDelivery
 from brazil58 import Brazil58
 import time
+import threading
 
 def aplicar_placeholder(textbox, texto_placeholder, cor_placeholder="gray"):
     # Criar o label que fica por cima
@@ -71,7 +72,7 @@ class TelaInicial(ctk.CTkFrame):
 
         ## frame tsp
 
-        self.frame_tsp = ctk.CTkFrame(self.frame_rest, fg_color="#E65F10", width=300, height=200)
+        self.frame_tsp = ctk.CTkFrame(self.frame_rest, fg_color="#E38650", width=300, height=200)
         self.frame_tsp.pack(side="right", pady=20, padx =40)
 
         titulo_tsp = ctk.CTkLabel(
@@ -141,39 +142,66 @@ class TelaInicial(ctk.CTkFrame):
 
         if not caminho:
             return
+        
+        self.mostrar_popup_carregando()
 
-        try:
-            solver = Brazil58()
-            solver.ler_tsp_explicit(caminho )   
-            self.label_tsp_status.configure(
-                text="Arquivo carregado com sucesso!",
-                text_color="green"
-            )
+        def tarefa():
+        
+            try:
+                solver = Brazil58()
+                solver.ler_tsp_explicit(caminho )   
+                self.label_tsp_status.configure(
+                    text="Arquivo carregado com sucesso!",
+                    text_color="green"
+                )
 
-            # Aqui você decide o que fazer após carregar o arquivo
-            # Exemplo: usar a mesma lógica de matriz_calculo()
-            n_pontos = len([p for p in solver.valores if p != 'R'])
-            if n_pontos == 0:
-                self.label_tsp_status.configure(text="Nenhum ponto válido no arquivo.", text_color="red")
-                return
+               
+                n_pontos = len([p for p in solver.valores if p != 'R'])
+                if n_pontos == 0:
+                    self.label_tsp_status.configure(text="Nenhum ponto válido no arquivo.", text_color="red")
+                    return
 
-            import time
-            inicio = time.time()
-            if n_pontos > 9:
-                metodo = "Algoritmo Genético"
-                rota, distancia = solver.algoritimo_genetico()
-            else:
-                metodo = "Força Bruta"
-                rota, distancia = solver.melhor_rota()
-            fim = time.time()
-            tempo = fim - inicio
+                import time
+                inicio = time.time()
+                if n_pontos > 9:
+                    metodo = "Algoritmo Genético"
+                    rota, distancia = solver.algoritmo_genetico()
+                else:
+                    metodo = "Força Bruta"
+                    rota, distancia = solver.melhor_rota()
+                fim = time.time()
+                tempo = fim - inicio
 
-            # Vai para a tela de resultados
-            self.master.mostrar_resultado(str(solver.matriz), rota, distancia, metodo, tempo)
+                # Vai para a tela de resultados
+                self.master.mostrar_resultado_tsp(solver=solver, rota=rota, distancia=distancia, metodo=metodo, tempo=tempo)
 
-        except Exception as e:
-            self.label_tsp_status.configure(
-                text=f"Erro ao ler .tsp: {e}",
-                text_color="red"
-            )
+            except Exception as e:
+                self.after(0, lambda: self.label_tsp_status.configure(
+                text=f"Erro ao ler .tsp: {e}", text_color="red"))
+            finally:
+                self.after(0, self.fechar_popup_carregando)
+
+    # Thread para não travar a interface
+        threading.Thread(target=tarefa).start()
+        
             
+    def mostrar_popup_carregando(self,      texto="Calculando o arquivo .tsp..."):
+        # Criar janela popup
+        self.popup = ctk.CTkToplevel(self)
+        self.popup.title("Aguarde")
+        self.popup.geometry("400x180")
+        self.popup.resizable(False, False)
+        self.popup.grab_set()  # trava interação com o restante da UI
+
+        label = ctk.CTkLabel(self.popup, text=texto, font=("Arial", 16))
+        label.pack(pady=20)
+
+        # Pequeno spinner visual
+        self.spinner = ctk.CTkProgressBar(self.popup, mode="indeterminate")
+        self.spinner.pack(pady=10)
+        self.spinner.start()
+
+    def fechar_popup_carregando(self):
+        if hasattr(self, "popup"):
+            self.spinner.stop()
+            self.popup.destroy()
