@@ -26,6 +26,7 @@ class Program (ctk.CTk):
     def mostrar_inicial(self):
             tela = TelaInicial(self)
             self.trocar_tela(tela)
+
         
     def mostrar_resultado(self, matriz, rota, distancia, metodo, tempo):
             tela = Resultado(self, matriz, rota, distancia, metodo, tempo)
