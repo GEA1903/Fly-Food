@@ -60,7 +60,7 @@ print(f"Melhor rota: {rota}")
 print(f"Distância total: {distancia} dronômetros")
 ```
 
-### Lendo de Arquivo
+### Leitura de Arquivo
 
 ```python
 solver = FoodDelivery(nome_arquivo='matriz.txt')
