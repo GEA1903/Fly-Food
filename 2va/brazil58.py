@@ -119,10 +119,10 @@ class Brazil58:
         
 #paramentros foram ajustados para melhor desempenho no Brazil58
     def algoritmo_genetico(self,
-                            tamanho_populacao=300,
-                            geracoes=10000,
-                            taxa_mutacao=0.30,
-                            taxa_crossover=0.65,
+                            tamanho_populacao=500,
+                            geracoes=15000,
+                            taxa_mutacao=0.25,
+                            taxa_crossover=0.75,
                             verbose=True):
         '''tamano_populacao: numero de individuos em cada geração
         geracoes: numero de gerações para evoluir
