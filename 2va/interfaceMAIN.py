@@ -2,6 +2,7 @@ import customtkinter as ctk
 from main import FoodDelivery
 from frame_tela_inicial import TelaInicial
 from frame_resultado import Resultado
+from frame_tspResult import ResultFrame
 
 class Program (ctk.CTk):
     def __init__(self):
@@ -25,10 +26,17 @@ class Program (ctk.CTk):
     def mostrar_inicial(self):
             tela = TelaInicial(self)
             self.trocar_tela(tela)
+
         
     def mostrar_resultado(self, matriz, rota, distancia, metodo, tempo):
             tela = Resultado(self, matriz, rota, distancia, metodo, tempo)
             self.trocar_tela(tela)
+
+    def mostrar_resultado_tsp(self, solver, rota, distancia, metodo, tempo):
+        
+        tela = ResultFrame(self, solver, rota, distancia, metodo, tempo)
+        self.trocar_tela(tela)
+    
 if __name__ == '__main__':
     app = Program()
     app.mainloop()
